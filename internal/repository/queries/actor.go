@@ -121,3 +121,14 @@ func (q *Queries) DeleteActor(ctx context.Context, id int) error {
 
 	return nil
 }
+
+const existsActorQuery = `SELECT EXISTS(SELECT 1 FROM actors WHERE id = $1)`
+
+func (q *Queries) ActorExists(ctx context.Context, id int) (bool, error) {
+	var exists bool
+	if err := q.pool.QueryRow(ctx, existsActorQuery, id).Scan(&exists); err != nil {
+		return false, fmt.Errorf("failed to check if actor exists: %w", err)
+	}
+
+	return exists, nil
+}

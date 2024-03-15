@@ -199,3 +199,14 @@ func (q *Queries) DeleteMovie(ctx context.Context, id int) error {
 
 	return nil
 }
+
+const existsMovieQuery = `SELECT EXISTS(SELECT 1 FROM movies WHERE id = $1)`
+
+func (q *Queries) MovieExists(ctx context.Context, id int) (bool, error) {
+	var exists bool
+	if err := q.pool.QueryRow(ctx, existsMovieQuery, id).Scan(&exists); err != nil {
+		return false, fmt.Errorf("failed to check if movie exists: %w", err)
+	}
+
+	return exists, nil
+}

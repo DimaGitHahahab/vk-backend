@@ -15,10 +15,12 @@ type ActorRepository interface {
 	AddActorToMovie(ctx context.Context, actorId int, movieId int) error
 	GetActorById(ctx context.Context, id int) (*domain.Actor, error)
 
-	GetActorsByMovieId(ctx context.Context, movieId int) ([]*domain.Actor, error)
 	ListActors(ctx context.Context) ([]*domain.Actor, error)
 	UpdateActor(ctx context.Context, new *domain.Actor) error
 	DeleteActor(ctx context.Context, id int) error
+
+	ActorExists(ctx context.Context, id int) (bool, error)
+	MovieExists(ctx context.Context, id int) (bool, error)
 }
 
 type actorRepo struct {
