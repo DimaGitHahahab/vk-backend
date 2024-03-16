@@ -1,4 +1,4 @@
-package service
+package actor
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"vk-backend/internal/service/util"
 )
 
-type ActorService interface {
+type Service interface {
 	AddActor(ctx context.Context, name string, gender int, birthDate time.Time) (*domain.Actor, error)
 	GetActorById(ctx context.Context, id int) (*domain.Actor, error)
 
@@ -23,7 +23,7 @@ type actorService struct {
 	repo repository.ActorRepository
 }
 
-func NewActorService(repo repository.ActorRepository) ActorService {
+func NewService(repo repository.ActorRepository) Service {
 	return &actorService{
 		repo: repo,
 	}

@@ -8,9 +8,9 @@ import (
 )
 
 type Filter struct {
-	Title       *string
-	ReleaseDate *time.Time
-	Rating      *float64
+	title       *string
+	releaseDate *time.Time
+	rating      *float64
 }
 
 func NewFilter() *Filter {
@@ -18,17 +18,17 @@ func NewFilter() *Filter {
 }
 
 func (f *Filter) WithTitle(title string) *Filter {
-	f.Title = &title
+	f.title = &title
 	return f
 }
 
 func (f *Filter) WithReleaseDate(releaseDate time.Time) *Filter {
-	f.ReleaseDate = &releaseDate
+	f.releaseDate = &releaseDate
 	return f
 }
 
 func (f *Filter) WithRating(rating float64) *Filter {
-	f.Rating = &rating
+	f.rating = &rating
 	return f
 }
 
@@ -39,19 +39,22 @@ const (
 	SortByReleaseDate
 	SortByTitle
 
-	defaultSort = SortByRating
+	DefaultSort = SortByRating
 )
 
 func FilterMovies(movies []*domain.Movie, filter *Filter) []*domain.Movie {
 	res := make([]*domain.Movie, 0, len(movies))
+	if filter == nil {
+		return movies
+	}
 	for _, movie := range movies {
-		if filter.Title != nil && !strings.Contains(movie.Title, *filter.Title) {
+		if filter.title != nil && !strings.Contains(movie.Title, *filter.title) {
 			continue
 		}
-		if filter.ReleaseDate != nil && movie.ReleaseDate != *filter.ReleaseDate {
+		if filter.releaseDate != nil && movie.ReleaseDate.Before(*filter.releaseDate) {
 			continue
 		}
-		if filter.Rating != nil && movie.Rating < *filter.Rating {
+		if filter.rating != nil && movie.Rating < *filter.rating {
 			continue
 		}
 		res = append(res, movie)
@@ -92,7 +95,7 @@ func ValidateMovieData(title, description string, rating float64) error {
 		return domain.ErrTooLongDescription
 	}
 	if rating < 0 || rating > 10 {
-		return domain.ErrorRatingInvalid
+		return domain.ErrInvalidRating
 	}
 
 	return nil

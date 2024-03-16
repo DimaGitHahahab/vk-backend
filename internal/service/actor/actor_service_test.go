@@ -1,4 +1,4 @@
-package service
+package actor
 
 import (
 	"context"
@@ -15,7 +15,7 @@ func TestActorService_AddActor(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := mocks.NewMockActorRepository(ctrl)
-	service := NewActorService(repo)
+	service := NewService(repo)
 
 	birthDate := time.Now()
 	repo.
@@ -43,7 +43,7 @@ func TestActorService_AddActor_InvalidData(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := mocks.NewMockActorRepository(ctrl)
-	service := NewActorService(repo)
+	service := NewService(repo)
 
 	birthDate := time.Now()
 	act, err := service.AddActor(context.Background(), "", 1, birthDate)
@@ -64,7 +64,7 @@ func TestActorService_GetActorById(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := mocks.NewMockActorRepository(ctrl)
-	service := NewActorService(repo)
+	service := NewService(repo)
 
 	repo.
 		EXPECT().
@@ -97,7 +97,7 @@ func TestActorService_GetActorById_NotExists(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := mocks.NewMockActorRepository(ctrl)
-	service := NewActorService(repo)
+	service := NewService(repo)
 
 	repo.
 		EXPECT().
@@ -114,7 +114,7 @@ func TestActorService_AddActorToMovie(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := mocks.NewMockActorRepository(ctrl)
-	service := NewActorService(repo)
+	service := NewService(repo)
 
 	repo.
 		EXPECT().
@@ -140,7 +140,7 @@ func TestActorService_AddActorToMovie_ActorNotExists(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := mocks.NewMockActorRepository(ctrl)
-	service := NewActorService(repo)
+	service := NewService(repo)
 
 	repo.
 		EXPECT().
@@ -156,7 +156,7 @@ func TestActorService_AddActorToMovie_MovieNotExists(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := mocks.NewMockActorRepository(ctrl)
-	service := NewActorService(repo)
+	service := NewService(repo)
 
 	repo.
 		EXPECT().
@@ -177,7 +177,7 @@ func TestActorService_UpdateActor(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := mocks.NewMockActorRepository(ctrl)
-	service := NewActorService(repo)
+	service := NewService(repo)
 	birthDate := time.Now()
 	repo.
 		EXPECT().
@@ -210,7 +210,7 @@ func TestActorService_UpdateActor_NotExists(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := mocks.NewMockActorRepository(ctrl)
-	service := NewActorService(repo)
+	service := NewService(repo)
 	birthDate := time.Now()
 	repo.
 		EXPECT().
@@ -232,7 +232,7 @@ func TestActorService_DeleteActor(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := mocks.NewMockActorRepository(ctrl)
-	service := NewActorService(repo)
+	service := NewService(repo)
 
 	repo.
 		EXPECT().
@@ -253,7 +253,7 @@ func TestActorService_DeleteActor_NotExists(t *testing.T) {
 	defer ctrl.Finish()
 
 	repo := mocks.NewMockActorRepository(ctrl)
-	service := NewActorService(repo)
+	service := NewService(repo)
 
 	repo.
 		EXPECT().
@@ -262,4 +262,86 @@ func TestActorService_DeleteActor_NotExists(t *testing.T) {
 
 	err := service.DeleteActor(context.Background(), 1)
 	assert.ErrorIs(t, err, domain.ErrActorNotExists)
+}
+
+func TestActorService_RepoReturnsInnerError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repo := mocks.NewMockActorRepository(ctrl)
+	service := NewService(repo)
+
+	birthDate := time.Now()
+
+	repo.
+		EXPECT().
+		AddActor(gomock.Any(), "name", 1, birthDate).
+		Return(nil, assert.AnError)
+
+	act, err := service.AddActor(context.Background(), "name", 1, birthDate)
+	assert.ErrorIs(t, err, assert.AnError)
+	assert.Nil(t, act)
+
+	repo.EXPECT().
+		ActorExists(gomock.Any(), 1).
+		Return(true, nil)
+
+	repo.
+		EXPECT().
+		GetActorById(gomock.Any(), 1).
+		Return(nil, assert.AnError)
+
+	act, err = service.GetActorById(context.Background(), 1)
+	assert.ErrorIs(t, err, assert.AnError)
+	assert.Nil(t, act)
+
+	repo.EXPECT().
+		ActorExists(gomock.Any(), 1).
+		Return(true, nil)
+
+	repo.EXPECT().
+		MovieExists(gomock.Any(), 1).
+		Return(true, nil)
+
+	repo.
+		EXPECT().
+		AddActorToMovie(gomock.Any(), 1, 1).
+		Return(assert.AnError)
+
+	err = service.AddActorToMovie(context.Background(), 1, 1)
+	assert.ErrorIs(t, err, assert.AnError)
+
+	repo.EXPECT().
+		ActorExists(gomock.Any(), 1).
+		Return(true, nil)
+
+	repo.
+		EXPECT().
+		UpdateActor(gomock.Any(), &domain.Actor{
+			Id:        1,
+			Name:      "name",
+			Gender:    1,
+			BirthDate: birthDate,
+		}).
+		Return(assert.AnError)
+
+	err = service.UpdateActor(context.Background(), &domain.Actor{
+		Id:        1,
+		Name:      "name",
+		Gender:    1,
+		BirthDate: birthDate,
+	})
+	assert.ErrorIs(t, err, assert.AnError)
+
+	repo.EXPECT().
+		ActorExists(gomock.Any(), 1).
+		Return(true, nil)
+
+	repo.
+		EXPECT().
+		DeleteActor(gomock.Any(), 1).
+		Return(assert.AnError)
+
+	err = service.DeleteActor(context.Background(), 1)
+	assert.ErrorIs(t, err, assert.AnError)
 }

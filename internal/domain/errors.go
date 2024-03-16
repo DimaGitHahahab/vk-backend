@@ -14,6 +14,6 @@ var (
 	ErrEmptyDescription   = errors.New("empty description")
 	ErrTooLongDescription = errors.New("description is too long")
 
-	ErrorRatingInvalid     = errors.New("rating is invalid")
+	ErrInvalidRating       = errors.New("rating is invalid")
 	ErrActorAlreadyInMovie = errors.New("actor is already in the movie")
 )

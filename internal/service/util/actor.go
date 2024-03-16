@@ -12,7 +12,6 @@ func ValidateActorData(name string, birthDate time.Time) error {
 	if birthDate.After(time.Now()) {
 		return domain.ErrFutureBirthDate
 	}
-
 	if birthDate.IsZero() {
 		return domain.ErrEmptyBirthDate
 	}
