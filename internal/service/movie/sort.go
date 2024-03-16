@@ -19,9 +19,9 @@ func SortMovies(movies []*domain.Movie, sorting SortBy) []*domain.Movie {
 	sortFunc := func(i, j int) bool {
 		switch sorting {
 		case SortByRating:
-			return movies[i].Rating < movies[j].Rating
+			return movies[i].Rating > movies[j].Rating
 		case SortByReleaseDate:
-			return movies[i].ReleaseDate.Before(movies[j].ReleaseDate)
+			return movies[j].ReleaseDate.Before(movies[i].ReleaseDate)
 		case SortByTitle:
 			return movies[i].Title < movies[j].Title
 		default:

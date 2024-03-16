@@ -4,12 +4,39 @@ import (
 	"context"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"sort"
 	"strings"
 	"testing"
 	"time"
 	"vk-backend/internal/domain"
 	"vk-backend/mocks"
 )
+
+func testMovies() []*domain.Movie {
+	return []*domain.Movie{
+		{
+			Id:          1,
+			Title:       "title1",
+			Description: "description1",
+			ReleaseDate: time.Now(),
+			Rating:      5.0,
+		},
+		{
+			Id:          2,
+			Title:       "title2",
+			Description: "description2",
+			ReleaseDate: time.Now().AddDate(1, 0, 0),
+			Rating:      4.0,
+		},
+		{
+			Id:          3,
+			Title:       "title3",
+			Description: "description3",
+			ReleaseDate: time.Now().AddDate(2, 0, 0),
+			Rating:      3.0,
+		},
+	}
+}
 
 func TestMovieService_AddMovie(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -333,6 +360,30 @@ func TestMovieService_DeleteMovie_NotExists(t *testing.T) {
 	assert.ErrorIs(t, err, domain.ErrMovieNotExists)
 }
 
+func TestMovieService_ListMovies(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repo := mocks.NewMockMovieRepository(ctrl)
+	service := NewService(repo)
+
+	movies := testMovies()
+
+	repo.
+		EXPECT().
+		ListMovies(gomock.Any()).
+		Return(movies, nil)
+
+	movies, err := service.ListMovies(context.Background(), nil, DefaultSort)
+	assert.NoError(t, err)
+	expected := movies
+	sort.Slice(expected, func(i, j int) bool {
+		return expected[i].Rating > expected[j].Rating
+	})
+	assert.Equal(t, expected, movies)
+
+}
+
 func TestFilterBuilder(t *testing.T) {
 
 	f := NewFilter()
@@ -366,28 +417,19 @@ func TestFilterMovies(t *testing.T) {
 	assert.Len(t, filteredMovies, 2)
 }
 
-func testMovies() []*domain.Movie {
-	return []*domain.Movie{
-		{
-			Id:          1,
-			Title:       "title1",
-			Description: "description1",
-			ReleaseDate: time.Now(),
-			Rating:      5.0,
-		},
-		{
-			Id:          2,
-			Title:       "title2",
-			Description: "description2",
-			ReleaseDate: time.Now().AddDate(1, 0, 0),
-			Rating:      4.0,
-		},
-		{
-			Id:          3,
-			Title:       "title3",
-			Description: "description3",
-			ReleaseDate: time.Now().AddDate(2, 0, 0),
-			Rating:      3.0,
-		},
-	}
+func TestSortMovies(t *testing.T) {
+	movies := testMovies()
+
+	sortedMovies := SortMovies(movies, SortByRating)
+	assert.Equal(t, 5.0, sortedMovies[0].Rating)
+	assert.Equal(t, 4.0, sortedMovies[1].Rating)
+	assert.Equal(t, 3.0, sortedMovies[2].Rating)
+
+	sortedMovies = SortMovies(movies, SortByReleaseDate)
+	assert.True(t, movies[2].ReleaseDate.Before(movies[1].ReleaseDate) && movies[1].ReleaseDate.Before(movies[0].ReleaseDate))
+
+	sortedMovies = SortMovies(movies, SortByTitle)
+	assert.Equal(t, "title1", sortedMovies[0].Title)
+	assert.Equal(t, "title2", sortedMovies[1].Title)
+	assert.Equal(t, "title3", sortedMovies[2].Title)
 }
