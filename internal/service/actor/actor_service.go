@@ -6,7 +6,6 @@ import (
 	"time"
 	"vk-backend/internal/domain"
 	"vk-backend/internal/repository"
-	"vk-backend/internal/service/util"
 )
 
 type Service interface {
@@ -29,7 +28,7 @@ func NewService(repo repository.ActorRepository) Service {
 	}
 }
 func (s *actorService) AddActor(ctx context.Context, name string, gender int, birthDate time.Time) (*domain.Actor, error) {
-	err := util.ValidateActorData(name, birthDate)
+	err := validateActorData(name, birthDate)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +90,7 @@ func (s *actorService) UpdateActor(ctx context.Context, new *domain.Actor) error
 		return domain.ErrActorNotExists
 	}
 
-	err = util.ValidateActorData(new.Name, new.BirthDate)
+	err = validateActorData(new.Name, new.BirthDate)
 	if err != nil {
 		return err
 	}
@@ -118,5 +117,18 @@ func (s *actorService) DeleteActor(ctx context.Context, id int) error {
 		return fmt.Errorf("actor service can't delete actor: %w", err)
 	}
 
+	return nil
+}
+
+func validateActorData(name string, birthDate time.Time) error {
+	if name == "" {
+		return domain.ErrEmptyName
+	}
+	if birthDate.After(time.Now()) {
+		return domain.ErrFutureBirthDate
+	}
+	if birthDate.IsZero() {
+		return domain.ErrEmptyBirthDate
+	}
 	return nil
 }

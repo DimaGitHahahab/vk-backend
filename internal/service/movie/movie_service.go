@@ -6,14 +6,13 @@ import (
 	"time"
 	"vk-backend/internal/domain"
 	"vk-backend/internal/repository"
-	"vk-backend/internal/service/util"
 )
 
 type Service interface {
 	AddMovie(ctx context.Context, title string, description string, releaseDate time.Time, rating float64, actors []*domain.Actor) (*domain.Movie, error)
 	GetMovieById(ctx context.Context, id int) (*domain.Movie, error)
 	GetActorsByMovieId(ctx context.Context, movieId int) ([]*domain.Actor, error)
-	ListMovies(ctx context.Context, filter *util.Filter, sorting util.SortBy) ([]*domain.Movie, error)
+	ListMovies(ctx context.Context, filter *Filter, sorting SortBy) ([]*domain.Movie, error)
 	UpdateMovie(ctx context.Context, new *domain.Movie) error
 	DeleteMovie(ctx context.Context, id int) error
 }
@@ -29,7 +28,7 @@ func NewService(repo repository.MovieRepository) Service {
 }
 
 func (s *movieService) AddMovie(ctx context.Context, title string, description string, releaseDate time.Time, rating float64, actors []*domain.Actor) (*domain.Movie, error) {
-	err := util.ValidateMovieData(title, description, rating)
+	err := validateMovieData(title, description, rating)
 	if err != nil {
 		return nil, err
 	}
@@ -75,12 +74,12 @@ func (s *movieService) GetActorsByMovieId(ctx context.Context, movieId int) ([]*
 	return actors, nil
 }
 
-func (s *movieService) ListMovies(ctx context.Context, filter *util.Filter, sorting util.SortBy) ([]*domain.Movie, error) {
+func (s *movieService) ListMovies(ctx context.Context, filter *Filter, sorting SortBy) ([]*domain.Movie, error) {
 	movies, err := s.repo.ListMovies(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("movie service can't list movies: %w", err)
 	}
-	movies = util.SortMovies(util.FilterMovies(movies, filter), sorting)
+	movies = SortMovies(FilterMovies(movies, filter), sorting)
 
 	return movies, nil
 }
@@ -114,6 +113,26 @@ func (s *movieService) DeleteMovie(ctx context.Context, id int) error {
 	err = s.repo.DeleteMovie(ctx, id)
 	if err != nil {
 		return fmt.Errorf("movie service can't delete movie: %w", err)
+	}
+
+	return nil
+}
+
+func validateMovieData(title, description string, rating float64) error {
+	if title == "" {
+		return domain.ErrEmptyTitle
+	}
+	if len(title) > 100 {
+		return domain.ErrTooLongTitle
+	}
+	if description == "" {
+		return domain.ErrEmptyDescription
+	}
+	if len(description) > 1000 {
+		return domain.ErrTooLongDescription
+	}
+	if rating < 0 || rating > 10 {
+		return domain.ErrInvalidRating
 	}
 
 	return nil
