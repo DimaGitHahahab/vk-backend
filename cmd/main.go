@@ -2,57 +2,76 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	pgxLogrus "github.com/jackc/pgx-logrus"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/sirupsen/logrus"
-	"time"
-	"vk-backend/internal/domain"
+	"github.com/jackc/pgx/v5/tracelog"
+	logger "github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"vk-backend/internal/api/server"
 	"vk-backend/internal/repository"
+	"vk-backend/internal/service/actor"
+	"vk-backend/internal/service/movie"
 )
 
 func main() {
+	log := logger.New()
+	log.SetLevel(logger.InfoLevel)
+	log.SetFormatter(&logger.TextFormatter{})
 
-	ctx := context.Background()
-	logger := logrus.New()
-	pool, err := pgxpool.New(ctx, "postgres://postgres:password@localhost:5432?sslmode=disable")
+	sigQuit := make(chan os.Signal, 2)
+	signal.Notify(sigQuit, syscall.SIGINT, syscall.SIGTERM)
+	eg, ctx := errgroup.WithContext(context.Background())
+
+	eg.Go(func() error {
+		select {
+		case s := <-sigQuit:
+			return fmt.Errorf("captured signal: %v", s)
+		case <-ctx.Done():
+			return fmt.Errorf("sigQuit context done")
+		}
+	})
+	config, err := pgxpool.ParseConfig("postgres://postgres:password@localhost:5432?sslmode=disable")
 	if err != nil {
-		logger.Fatalf("failed to create connection pool: %v", err)
+		logger.Fatalf("failed to parse pgxpool config: %v", err)
 	}
-	movies := repository.NewMovieRepository(pool, logger)
-	actors := repository.NewActorRepository(pool, logger)
 
-	act, err := actors.AddActor(ctx, "Thomas Shelby", 1, time.Now())
+	config.ConnConfig.Tracer = &tracelog.TraceLog{
+		Logger:   pgxLogrus.NewLogger(log),
+		LogLevel: tracelog.LogLevelDebug,
+	}
+
+	pool, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
-		logger.Fatalf("failed to add actor: %v", err)
+		logger.Fatalf("failed to create new pool: %v", err)
 	}
-	fmt.Println(act)
+	defer pool.Close()
 
-	movie, err := movies.AddMovie(ctx, "Vk-movie-2024", "Some description.", time.Now(), 9.2, []*domain.Actor{act})
-	if err != nil {
-		logger.Fatalf("failed to add movie: %v", err)
-	}
-	fmt.Println(movie)
-	fmt.Println(movie.Actors[0])
+	actRepo := repository.NewActorRepository(pool, log)
+	movieRepo := repository.NewMovieRepository(pool, log)
 
-	if actors.UpdateActor(ctx, &domain.Actor{
-		Id:        1,
-		Name:      act.Name,
-		Gender:    act.Gender,
-		BirthDate: act.BirthDate.AddDate(-50, 0, 0),
-	}) != nil {
-		logger.Fatalf("failed to update actor: %v", err)
-	}
-	act, err = actors.GetActorById(ctx, 1)
-	if err != nil {
-		logger.Fatalf("failed to get actor: %v", err)
-	}
-	fmt.Println(act)
+	actSrv := actor.NewService(actRepo)
+	movieSrv := movie.NewService(movieRepo)
 
-	movie, err = movies.GetMovieById(ctx, 1)
-	if err != nil {
-		logger.Fatalf("failed to get movie: %v", err)
-	}
-	fmt.Println(movie)
-	fmt.Println(movie.Actors[0])
+	srv := server.New(":8080", &actSrv, &movieSrv, log)
+	go func() {
+		log.Println("starting server...")
+		if err := srv.Run(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("failed to start server: %v", err)
+		}
+	}()
 
+	if err := eg.Wait(); err != nil {
+		log.Infof("gracefully shutting down the server: %v", err)
+	}
+
+	if err := srv.Shutdown(context.Background()); err != nil {
+		log.Fatalf("failed to shutdown the server gracefully: %v", err)
+	}
+	log.Info("server shutdown is successful")
 }

@@ -109,69 +109,6 @@ func TestActorService_GetActorById_NotExists(t *testing.T) {
 	assert.Nil(t, act)
 }
 
-func TestActorService_AddActorToMovie(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	repo := mocks.NewMockActorRepository(ctrl)
-	service := NewService(repo)
-
-	repo.
-		EXPECT().
-		ActorExists(gomock.Any(), 1).
-		Return(true, nil)
-
-	repo.
-		EXPECT().
-		MovieExists(gomock.Any(), 1).
-		Return(true, nil)
-
-	repo.
-		EXPECT().
-		AddActorToMovie(gomock.Any(), 1, 1).
-		Return(nil)
-
-	err := service.AddActorToMovie(context.Background(), 1, 1)
-	assert.NoError(t, err)
-}
-
-func TestActorService_AddActorToMovie_ActorNotExists(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	repo := mocks.NewMockActorRepository(ctrl)
-	service := NewService(repo)
-
-	repo.
-		EXPECT().
-		ActorExists(gomock.Any(), 1).
-		Return(false, nil)
-
-	err := service.AddActorToMovie(context.Background(), 1, 1)
-	assert.ErrorIs(t, err, domain.ErrActorNotExists)
-}
-
-func TestActorService_AddActorToMovie_MovieNotExists(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	repo := mocks.NewMockActorRepository(ctrl)
-	service := NewService(repo)
-
-	repo.
-		EXPECT().
-		ActorExists(gomock.Any(), 1).
-		Return(true, nil)
-
-	repo.
-		EXPECT().
-		MovieExists(gomock.Any(), 1).
-		Return(false, nil)
-
-	err := service.AddActorToMovie(context.Background(), 1, 1)
-	assert.ErrorIs(t, err, domain.ErrMovieNotExists)
-}
-
 func TestActorService_UpdateActor(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -294,22 +231,6 @@ func TestActorService_RepoReturnsInnerError(t *testing.T) {
 	act, err = service.GetActorById(context.Background(), 1)
 	assert.ErrorIs(t, err, assert.AnError)
 	assert.Nil(t, act)
-
-	repo.EXPECT().
-		ActorExists(gomock.Any(), 1).
-		Return(true, nil)
-
-	repo.EXPECT().
-		MovieExists(gomock.Any(), 1).
-		Return(true, nil)
-
-	repo.
-		EXPECT().
-		AddActorToMovie(gomock.Any(), 1, 1).
-		Return(assert.AnError)
-
-	err = service.AddActorToMovie(context.Background(), 1, 1)
-	assert.ErrorIs(t, err, assert.AnError)
 
 	repo.EXPECT().
 		ActorExists(gomock.Any(), 1).

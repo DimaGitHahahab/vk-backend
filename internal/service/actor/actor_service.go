@@ -12,10 +12,10 @@ type Service interface {
 	AddActor(ctx context.Context, name string, gender int, birthDate time.Time) (*domain.Actor, error)
 	GetActorById(ctx context.Context, id int) (*domain.Actor, error)
 
-	AddActorToMovie(ctx context.Context, actorId int, movieId int) error
-
 	UpdateActor(ctx context.Context, new *domain.Actor) error
 	DeleteActor(ctx context.Context, id int) error
+
+	ListActors(ctx context.Context) ([]*domain.Actor, error)
 }
 
 type actorService struct {
@@ -28,7 +28,7 @@ func NewService(repo repository.ActorRepository) Service {
 	}
 }
 func (s *actorService) AddActor(ctx context.Context, name string, gender int, birthDate time.Time) (*domain.Actor, error) {
-	err := validateActorData(name, birthDate)
+	err := validateActorData(name, birthDate, gender)
 	if err != nil {
 		return nil, err
 	}
@@ -56,30 +56,6 @@ func (s *actorService) GetActorById(ctx context.Context, id int) (*domain.Actor,
 
 	return actor, nil
 }
-func (s *actorService) AddActorToMovie(ctx context.Context, actorId int, movieId int) error {
-	ok, err := s.repo.ActorExists(ctx, actorId)
-	if err != nil {
-		return fmt.Errorf("actor service can't check if actor exists: %w", err)
-	}
-	if !ok {
-		return domain.ErrActorNotExists
-	}
-
-	ok, err = s.repo.MovieExists(ctx, movieId)
-	if err != nil {
-		return fmt.Errorf("actor service can't check if movie exists: %w", err)
-	}
-	if !ok {
-		return domain.ErrMovieNotExists
-	}
-
-	err = s.repo.AddActorToMovie(ctx, actorId, movieId)
-	if err != nil {
-		return fmt.Errorf("actor service can't add actor to movie: %w", err)
-	}
-
-	return nil
-}
 
 func (s *actorService) UpdateActor(ctx context.Context, new *domain.Actor) error {
 	ok, err := s.repo.ActorExists(ctx, new.Id)
@@ -90,7 +66,7 @@ func (s *actorService) UpdateActor(ctx context.Context, new *domain.Actor) error
 		return domain.ErrActorNotExists
 	}
 
-	err = validateActorData(new.Name, new.BirthDate)
+	err = validateActorData(new.Name, new.BirthDate, new.Gender)
 	if err != nil {
 		return err
 	}
@@ -120,7 +96,17 @@ func (s *actorService) DeleteActor(ctx context.Context, id int) error {
 	return nil
 }
 
-func validateActorData(name string, birthDate time.Time) error {
+func (s *actorService) ListActors(ctx context.Context) ([]*domain.Actor, error) {
+	actors, err := s.repo.ListActors(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("actor service can't list actors: %w", err)
+	}
+
+	return actors, nil
+
+}
+
+func validateActorData(name string, birthDate time.Time, gender int) error {
 	if name == "" {
 		return domain.ErrEmptyName
 	}
@@ -130,5 +116,9 @@ func validateActorData(name string, birthDate time.Time) error {
 	if birthDate.IsZero() {
 		return domain.ErrEmptyBirthDate
 	}
+	if gender != 0 && gender != 1 && gender != 2 && gender != 9 {
+		return domain.ErrInvalidGender
+	}
+
 	return nil
 }

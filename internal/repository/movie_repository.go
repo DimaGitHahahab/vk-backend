@@ -11,6 +11,7 @@ import (
 
 type MovieRepository interface {
 	AddMovie(ctx context.Context, title string, description string, releaseDate time.Time, rating float64, actors []*domain.Actor) (*domain.Movie, error)
+	AddActorToMovie(ctx context.Context, actorId int, movieId int) error
 	GetMovieById(ctx context.Context, id int) (*domain.Movie, error)
 	GetActorsByMovieId(ctx context.Context, movieId int) ([]*domain.Actor, error)
 	ListMovies(ctx context.Context) ([]*domain.Movie, error)

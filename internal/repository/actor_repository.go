@@ -11,8 +11,6 @@ import (
 
 type ActorRepository interface {
 	AddActor(ctx context.Context, name string, gender int, birthDate time.Time) (*domain.Actor, error)
-
-	AddActorToMovie(ctx context.Context, actorId int, movieId int) error
 	GetActorById(ctx context.Context, id int) (*domain.Actor, error)
 
 	ListActors(ctx context.Context) ([]*domain.Actor, error)
@@ -20,7 +18,6 @@ type ActorRepository interface {
 	DeleteActor(ctx context.Context, id int) error
 
 	ActorExists(ctx context.Context, id int) (bool, error)
-	MovieExists(ctx context.Context, id int) (bool, error)
 }
 
 type actorRepo struct {

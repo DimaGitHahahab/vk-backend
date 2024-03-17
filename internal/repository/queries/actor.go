@@ -80,7 +80,7 @@ func (q *Queries) GetActorsByMovieId(ctx context.Context, movieId int) ([]*domai
 const selectAllActorsQuery = `SELECT id, name, gender, birth_date FROM actors`
 
 func (q *Queries) ListActors(ctx context.Context) ([]*domain.Actor, error) {
-	rows, err := q.pool.Query(ctx, selectActorQuery)
+	rows, err := q.pool.Query(ctx, selectAllActorsQuery)
 	if err != nil {
 		return nil, fmt.Errorf("failed to select all actors: %w", err)
 	}
@@ -90,7 +90,7 @@ func (q *Queries) ListActors(ctx context.Context) ([]*domain.Actor, error) {
 	var actors []*domain.Actor
 	for rows.Next() {
 		actor := &domain.Actor{}
-		if err := rows.Scan(ctx, selectAllActorsQuery, &actor.Id, &actor.Name, &actor.Gender, &actor.Gender); err != nil {
+		if err := rows.Scan(&actor.Id, &actor.Name, &actor.Gender, &actor.BirthDate); err != nil {
 			return nil, fmt.Errorf("failed to list all the actors: %w", err)
 		}
 		actors = append(actors, actor)

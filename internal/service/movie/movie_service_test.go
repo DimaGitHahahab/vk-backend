@@ -141,6 +141,69 @@ func TestMovieService_AddMovie_InvalidData(t *testing.T) {
 	assert.Nil(t, movie)
 }
 
+func TestMovieService_AddActorToMovie(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repo := mocks.NewMockMovieRepository(ctrl)
+	service := NewService(repo)
+
+	repo.
+		EXPECT().
+		ActorExists(gomock.Any(), 1).
+		Return(true, nil)
+
+	repo.
+		EXPECT().
+		MovieExists(gomock.Any(), 1).
+		Return(true, nil)
+
+	repo.
+		EXPECT().
+		AddActorToMovie(gomock.Any(), 1, 1).
+		Return(nil)
+
+	err := service.AddActorToMovie(context.Background(), 1, 1)
+	assert.NoError(t, err)
+}
+
+func TestMovieService_AddActorToMovie_ActorNotExists(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repo := mocks.NewMockMovieRepository(ctrl)
+	service := NewService(repo)
+
+	repo.
+		EXPECT().
+		ActorExists(gomock.Any(), 1).
+		Return(false, nil)
+
+	err := service.AddActorToMovie(context.Background(), 1, 1)
+	assert.ErrorIs(t, err, domain.ErrActorNotExists)
+}
+
+func TestMovieService_AddActorToMovie_MovieNotExists(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repo := mocks.NewMockMovieRepository(ctrl)
+	service := NewService(repo)
+
+	repo.
+		EXPECT().
+		ActorExists(gomock.Any(), 1).
+		Return(true, nil)
+
+	repo.
+		EXPECT().
+		MovieExists(gomock.Any(), 1).
+		Return(false, nil)
+
+	err := service.AddActorToMovie(context.Background(), 1, 1)
+	assert.ErrorIs(t, err, domain.ErrMovieNotExists)
+}
+
 func TestMovieService_GetMovieById(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

@@ -6,6 +6,7 @@ var (
 	ErrEmptyName       = errors.New("empty name")
 	ErrFutureBirthDate = errors.New("birth date is in the future")
 	ErrEmptyBirthDate  = errors.New("empty birth date")
+	ErrInvalidGender   = errors.New("invalid gender")
 	ErrActorNotExists  = errors.New("actor does not exist")
 	ErrMovieNotExists  = errors.New("movie does not exist")
 

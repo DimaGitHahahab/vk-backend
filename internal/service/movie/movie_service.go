@@ -10,6 +10,7 @@ import (
 
 type Service interface {
 	AddMovie(ctx context.Context, title string, description string, releaseDate time.Time, rating float64, actors []*domain.Actor) (*domain.Movie, error)
+	AddActorToMovie(ctx context.Context, actorId int, movieId int) error
 	GetMovieById(ctx context.Context, id int) (*domain.Movie, error)
 	GetActorsByMovieId(ctx context.Context, movieId int) ([]*domain.Actor, error)
 	ListMovies(ctx context.Context, filter *Filter, sorting SortBy) ([]*domain.Movie, error)
@@ -38,6 +39,31 @@ func (s *movieService) AddMovie(ctx context.Context, title string, description s
 	}
 
 	return movie, nil
+}
+
+func (s *movieService) AddActorToMovie(ctx context.Context, actorId int, movieId int) error {
+	ok, err := s.repo.ActorExists(ctx, actorId)
+	if err != nil {
+		return fmt.Errorf("actor service can't check if actor exists: %w", err)
+	}
+	if !ok {
+		return domain.ErrActorNotExists
+	}
+
+	ok, err = s.repo.MovieExists(ctx, movieId)
+	if err != nil {
+		return fmt.Errorf("actor service can't check if movie exists: %w", err)
+	}
+	if !ok {
+		return domain.ErrMovieNotExists
+	}
+
+	err = s.repo.AddActorToMovie(ctx, actorId, movieId)
+	if err != nil {
+		return fmt.Errorf("actor service can't add actor to movie: %w", err)
+	}
+
+	return nil
 }
 
 func (s *movieService) GetMovieById(ctx context.Context, id int) (*domain.Movie, error) {

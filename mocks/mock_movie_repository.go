@@ -56,6 +56,20 @@ func (mr *MockMovieRepositoryMockRecorder) ActorExists(ctx, id any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActorExists", reflect.TypeOf((*MockMovieRepository)(nil).ActorExists), ctx, id)
 }
 
+// AddActorToMovie mocks base method.
+func (m *MockMovieRepository) AddActorToMovie(ctx context.Context, actorId, movieId int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddActorToMovie", ctx, actorId, movieId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddActorToMovie indicates an expected call of AddActorToMovie.
+func (mr *MockMovieRepositoryMockRecorder) AddActorToMovie(ctx, actorId, movieId any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddActorToMovie", reflect.TypeOf((*MockMovieRepository)(nil).AddActorToMovie), ctx, actorId, movieId)
+}
+
 // AddMovie mocks base method.
 func (m *MockMovieRepository) AddMovie(ctx context.Context, title, description string, releaseDate time.Time, rating float64, actors []*domain.Actor) (*domain.Movie, error) {
 	m.ctrl.T.Helper()

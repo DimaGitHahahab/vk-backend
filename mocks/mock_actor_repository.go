@@ -71,20 +71,6 @@ func (mr *MockActorRepositoryMockRecorder) AddActor(ctx, name, gender, birthDate
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddActor", reflect.TypeOf((*MockActorRepository)(nil).AddActor), ctx, name, gender, birthDate)
 }
 
-// AddActorToMovie mocks base method.
-func (m *MockActorRepository) AddActorToMovie(ctx context.Context, actorId, movieId int) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddActorToMovie", ctx, actorId, movieId)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AddActorToMovie indicates an expected call of AddActorToMovie.
-func (mr *MockActorRepositoryMockRecorder) AddActorToMovie(ctx, actorId, movieId any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddActorToMovie", reflect.TypeOf((*MockActorRepository)(nil).AddActorToMovie), ctx, actorId, movieId)
-}
-
 // DeleteActor mocks base method.
 func (m *MockActorRepository) DeleteActor(ctx context.Context, id int) error {
 	m.ctrl.T.Helper()
