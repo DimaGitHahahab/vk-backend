@@ -29,6 +29,11 @@ func (h *Handler) AddActorHandler(writer http.ResponseWriter, request *http.Requ
 		return
 	}
 
+	if !isAdminRole(request) {
+		h.HandleServiceError(writer, domain.ErrNotAdmin)
+		return
+	}
+
 	actor, err := h.act.AddActor(request.Context(), act.Name, genderStringToInt(act.Gender), act.BirthDate)
 	if err != nil {
 		h.HandleServiceError(writer, err)
@@ -50,6 +55,11 @@ func (h *Handler) UpdateActorHandler(writer http.ResponseWriter, request *http.R
 	if err := json.NewDecoder(request.Body).Decode(act); err != nil {
 		writer.WriteHeader(http.StatusBadRequest)
 		_, _ = writer.Write([]byte("Invalid request body"))
+		return
+	}
+
+	if !isAdminRole(request) {
+		h.HandleServiceError(writer, domain.ErrNotAdmin)
 		return
 	}
 
@@ -134,6 +144,12 @@ func (h *Handler) GetAllActorsHandler(writer http.ResponseWriter, request *http.
 }
 
 func (h *Handler) DeleteActorHandler(writer http.ResponseWriter, request *http.Request) {
+
+	if !isAdminRole(request) {
+		h.HandleServiceError(writer, domain.ErrNotAdmin)
+		return
+	}
+
 	id, err := strconv.Atoi(request.PathValue("id"))
 	if err != nil {
 		writer.WriteHeader(http.StatusBadRequest)

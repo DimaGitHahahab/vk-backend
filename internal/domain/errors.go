@@ -18,4 +18,12 @@ var (
 	ErrInvalidRating       = errors.New("rating is invalid")
 	ErrActorAlreadyInMovie = errors.New("actor is already in the movie")
 	ErrEmptyReleaseDate    = errors.New("empty release date")
+
+	ErrUserAlreadyExists = errors.New("user already exists")
+	ErrUserNotExists     = errors.New("user does not exist")
+	ErrInvalidLogin      = errors.New("invalid username or password")
+
+	ErrEmptyPassword = errors.New("empty password")
+
+	ErrNotAdmin = errors.New("not admin")
 )

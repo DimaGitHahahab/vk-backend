@@ -34,6 +34,11 @@ func (h *Handler) AddMovieHandler(writer http.ResponseWriter, request *http.Requ
 		return
 	}
 
+	if !isAdminRole(request) {
+		h.HandleServiceError(writer, domain.ErrNotAdmin)
+		return
+	}
+
 	actors := make([]*domain.Actor, 0, len(mov.Actors))
 	for _, id := range mov.Actors {
 		actor, err := h.act.GetActorById(request.Context(), id)
@@ -69,6 +74,11 @@ func (h *Handler) AddActorToMovieHandler(writer http.ResponseWriter, request *ht
 	if err := json.NewDecoder(request.Body).Decode(req); err != nil {
 		writer.WriteHeader(http.StatusBadRequest)
 		_, _ = writer.Write([]byte("Invalid request body"))
+		return
+	}
+
+	if !isAdminRole(request) {
+		h.HandleServiceError(writer, domain.ErrNotAdmin)
 		return
 	}
 
@@ -176,6 +186,11 @@ func (h *Handler) UpdateMovieHandler(writer http.ResponseWriter, request *http.R
 		return
 	}
 
+	if !isAdminRole(request) {
+		h.HandleServiceError(writer, domain.ErrNotAdmin)
+		return
+	}
+
 	mov := &MovieRequest{}
 	if err := json.NewDecoder(request.Body).Decode(mov); err != nil {
 		writer.WriteHeader(http.StatusBadRequest)
@@ -232,6 +247,11 @@ func (h *Handler) DeleteMovieHandler(writer http.ResponseWriter, request *http.R
 	if err != nil {
 		writer.WriteHeader(http.StatusBadRequest)
 		_, _ = writer.Write([]byte("Invalid movie id"))
+		return
+	}
+
+	if !isAdminRole(request) {
+		h.HandleServiceError(writer, domain.ErrNotAdmin)
 		return
 	}
 

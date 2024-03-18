@@ -21,6 +21,7 @@ import (
 	"vk-backend/internal/repository"
 	"vk-backend/internal/service/actor"
 	"vk-backend/internal/service/movie"
+	"vk-backend/internal/service/user"
 )
 
 func main() {
@@ -66,11 +67,13 @@ func main() {
 
 	actRepo := repository.NewActorRepository(pool, logger)
 	movieRepo := repository.NewMovieRepository(pool, logger)
+	userRepo := repository.NewUserRepository(pool, logger)
 
 	actSrv := actor.NewService(actRepo)
 	movieSrv := movie.NewService(movieRepo)
+	userSrv := user.NewService(userRepo)
 
-	srv := server.New(os.Getenv("HTTP_PORT"), &actSrv, &movieSrv, logger)
+	srv := server.New(os.Getenv("HTTP_PORT"), &actSrv, &movieSrv, &userSrv, logger)
 	go func() {
 		logger.Println("starting server...")
 		if err := srv.Run(); err != nil && !errors.Is(err, http.ErrServerClosed) {

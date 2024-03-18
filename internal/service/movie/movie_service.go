@@ -42,6 +42,12 @@ func (s *movieService) AddMovie(ctx context.Context, title string, description s
 }
 
 func (s *movieService) AddActorToMovie(ctx context.Context, actorId int, movieId int) error {
+	if actorId <= 0 {
+		return domain.ErrActorNotExists
+	}
+	if movieId <= 0 {
+		return domain.ErrMovieNotExists
+	}
 	ok, err := s.repo.ActorExists(ctx, actorId)
 	if err != nil {
 		return fmt.Errorf("actor service can't check if actor exists: %w", err)
@@ -78,6 +84,9 @@ func (s *movieService) AddActorToMovie(ctx context.Context, actorId int, movieId
 }
 
 func (s *movieService) GetMovieById(ctx context.Context, id int) (*domain.Movie, error) {
+	if id <= 0 {
+		return nil, domain.ErrMovieNotExists
+	}
 	ok, err := s.repo.MovieExists(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("movie service can't check if movie exists: %w", err)
@@ -95,6 +104,9 @@ func (s *movieService) GetMovieById(ctx context.Context, id int) (*domain.Movie,
 }
 
 func (s *movieService) GetActorsByMovieId(ctx context.Context, movieId int) ([]*domain.Actor, error) {
+	if movieId <= 0 {
+		return nil, domain.ErrMovieNotExists
+	}
 	ok, err := s.repo.MovieExists(ctx, movieId)
 	if err != nil {
 		return nil, fmt.Errorf("movie service can't check if movie exists: %w", err)
@@ -122,6 +134,9 @@ func (s *movieService) ListMovies(ctx context.Context, filter *Filter, sorting S
 }
 
 func (s *movieService) UpdateMovie(ctx context.Context, new *domain.Movie) error {
+	if new.Id <= 0 {
+		return domain.ErrMovieNotExists
+	}
 	ok, err := s.repo.MovieExists(ctx, new.Id)
 	if err != nil {
 		return fmt.Errorf("movie service can't check if movie exists: %w", err)
@@ -139,6 +154,9 @@ func (s *movieService) UpdateMovie(ctx context.Context, new *domain.Movie) error
 }
 
 func (s *movieService) DeleteMovie(ctx context.Context, id int) error {
+	if id <= 0 {
+		return domain.ErrMovieNotExists
+	}
 	ok, err := s.repo.MovieExists(ctx, id)
 	if err != nil {
 		return fmt.Errorf("movie service can't check if movie exists: %w", err)

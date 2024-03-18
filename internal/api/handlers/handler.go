@@ -6,17 +6,20 @@ import (
 	"vk-backend/internal/domain"
 	"vk-backend/internal/service/actor"
 	"vk-backend/internal/service/movie"
+	"vk-backend/internal/service/user"
 )
 
 type Handler struct {
-	act actor.Service
-	mov movie.Service
+	act  actor.Service
+	mov  movie.Service
+	user user.Service
 }
 
-func New(act actor.Service, mov movie.Service) *Handler {
+func New(act actor.Service, mov movie.Service, user user.Service) *Handler {
 	return &Handler{
-		act: act,
-		mov: mov,
+		act:  act,
+		mov:  mov,
+		user: user,
 	}
 }
 
@@ -61,6 +64,21 @@ func (h *Handler) HandleServiceError(writer http.ResponseWriter, err error) {
 	case errors.Is(err, domain.ErrEmptyReleaseDate):
 		writer.WriteHeader(http.StatusBadRequest)
 		_, _ = writer.Write([]byte("Release date cannot be empty"))
+	case errors.Is(err, domain.ErrUserAlreadyExists):
+		writer.WriteHeader(http.StatusConflict)
+		_, _ = writer.Write([]byte("User already exists"))
+	case errors.Is(err, domain.ErrUserNotExists):
+		writer.WriteHeader(http.StatusNotFound)
+		_, _ = writer.Write([]byte("User does not exist"))
+	case errors.Is(err, domain.ErrInvalidLogin):
+		writer.WriteHeader(http.StatusUnauthorized)
+		_, _ = writer.Write([]byte("Invalid username or password"))
+	case errors.Is(err, domain.ErrEmptyPassword):
+		writer.WriteHeader(http.StatusBadRequest)
+		_, _ = writer.Write([]byte("Password cannot be empty"))
+	case errors.Is(err, domain.ErrNotAdmin):
+		writer.WriteHeader(http.StatusForbidden)
+		_, _ = writer.Write([]byte("not allowed"))
 	default:
 		writer.WriteHeader(http.StatusInternalServerError)
 		_, _ = writer.Write([]byte("Internal server error"))

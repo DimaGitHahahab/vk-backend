@@ -41,6 +41,9 @@ func (s *actorService) AddActor(ctx context.Context, name string, gender int, bi
 }
 
 func (s *actorService) GetActorById(ctx context.Context, id int) (*domain.Actor, error) {
+	if id <= 0 {
+		return nil, domain.ErrActorNotExists
+	}
 	ok, err := s.repo.ActorExists(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("actor service can't check if actor exists: %w", err)
@@ -58,6 +61,10 @@ func (s *actorService) GetActorById(ctx context.Context, id int) (*domain.Actor,
 }
 
 func (s *actorService) UpdateActor(ctx context.Context, new *domain.Actor) error {
+	if new.Id <= 0 {
+		return domain.ErrActorNotExists
+	}
+
 	ok, err := s.repo.ActorExists(ctx, new.Id)
 	if err != nil {
 		return fmt.Errorf("actor service can't check if actor exists: %w", err)
@@ -80,6 +87,9 @@ func (s *actorService) UpdateActor(ctx context.Context, new *domain.Actor) error
 }
 
 func (s *actorService) DeleteActor(ctx context.Context, id int) error {
+	if id <= 0 {
+		return domain.ErrActorNotExists
+	}
 	ok, err := s.repo.ActorExists(ctx, id)
 	if err != nil {
 		return fmt.Errorf("actor service can't check if actor exists: %w", err)
