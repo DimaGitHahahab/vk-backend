@@ -48,21 +48,21 @@ func TestMovieService_AddMovie(t *testing.T) {
 	releaseDate := time.Now()
 	repo.
 		EXPECT().
-		AddMovie(gomock.Any(), "title", "description", releaseDate, 9.0, nil).
+		AddMovie(gomock.Any(), "name", "description", releaseDate, 9.0, nil).
 		Return(&domain.Movie{
 			Id:          1,
-			Title:       "title",
+			Title:       "name",
 			Description: "description",
 			ReleaseDate: releaseDate,
 			Rating:      9.0,
 			Actors:      nil,
 		}, nil)
 
-	movie, err := service.AddMovie(context.Background(), "title", "description", releaseDate, 9.0, nil)
+	movie, err := service.AddMovie(context.Background(), "name", "description", releaseDate, 9.0, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, &domain.Movie{
 		Id:          1,
-		Title:       "title",
+		Title:       "name",
 		Description: "description",
 		ReleaseDate: releaseDate,
 		Rating:      9.0,
@@ -88,21 +88,21 @@ func TestMovieService_AddMovie_WithActors(t *testing.T) {
 	}
 	repo.
 		EXPECT().
-		AddMovie(gomock.Any(), "title", "description", releaseDate, 9.0, actors).
+		AddMovie(gomock.Any(), "name", "description", releaseDate, 9.0, actors).
 		Return(&domain.Movie{
 			Id:          1,
-			Title:       "title",
+			Title:       "name",
 			Description: "description",
 			ReleaseDate: releaseDate,
 			Rating:      9.0,
 			Actors:      actors,
 		}, nil)
 
-	movie, err := service.AddMovie(context.Background(), "title", "description", releaseDate, 9.0, actors)
+	movie, err := service.AddMovie(context.Background(), "name", "description", releaseDate, 9.0, actors)
 	assert.NoError(t, err)
 	assert.Equal(t, &domain.Movie{
 		Id:          1,
-		Title:       "title",
+		Title:       "name",
 		Description: "description",
 		ReleaseDate: releaseDate,
 		Rating:      9.0,
@@ -122,11 +122,11 @@ func TestMovieService_AddMovie_InvalidData(t *testing.T) {
 	assert.ErrorIs(t, err, domain.ErrEmptyTitle)
 	assert.Nil(t, movie)
 
-	movie, err = service.AddMovie(context.Background(), "title", "", releaseDate, 9.0, nil)
+	movie, err = service.AddMovie(context.Background(), "name", "", releaseDate, 9.0, nil)
 	assert.ErrorIs(t, err, domain.ErrEmptyDescription)
 	assert.Nil(t, movie)
 
-	movie, err = service.AddMovie(context.Background(), "title", "description", releaseDate, -2.0, nil)
+	movie, err = service.AddMovie(context.Background(), "name", "description", releaseDate, -2.0, nil)
 	assert.ErrorIs(t, err, domain.ErrInvalidRating)
 	assert.Nil(t, movie)
 
@@ -136,7 +136,7 @@ func TestMovieService_AddMovie_InvalidData(t *testing.T) {
 	assert.Nil(t, movie)
 
 	longDescription := strings.Repeat("a", 4096)
-	movie, err = service.AddMovie(context.Background(), "title", longDescription, releaseDate, 9.0, nil)
+	movie, err = service.AddMovie(context.Background(), "name", longDescription, releaseDate, 9.0, nil)
 	assert.ErrorIs(t, err, domain.ErrTooLongDescription)
 	assert.Nil(t, movie)
 }
@@ -163,7 +163,7 @@ func TestMovieService_AddActorToMovie(t *testing.T) {
 		GetMovieById(gomock.Any(), 1).
 		Return(&domain.Movie{
 			Id:          1,
-			Title:       "title",
+			Title:       "name",
 			Description: "description",
 			ReleaseDate: time.Now(),
 
@@ -234,7 +234,7 @@ func TestMovieService_GetMovieById(t *testing.T) {
 		GetMovieById(gomock.Any(), 1).
 		Return(&domain.Movie{
 			Id:          1,
-			Title:       "title",
+			Title:       "name",
 			Description: "description",
 			ReleaseDate: releaseDate,
 			Rating:      9.0,
@@ -245,7 +245,7 @@ func TestMovieService_GetMovieById(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, &domain.Movie{
 		Id:          1,
-		Title:       "title",
+		Title:       "name",
 		Description: "description",
 		ReleaseDate: releaseDate,
 		Rating:      9.0,
@@ -353,7 +353,7 @@ func TestMovieService_UpdateMovie(t *testing.T) {
 		EXPECT().
 		UpdateMovie(gomock.Any(), &domain.Movie{
 			Id:          1,
-			Title:       "title",
+			Title:       "name",
 			Description: "description",
 			ReleaseDate: releaseDate,
 			Rating:      9.0,
@@ -363,7 +363,7 @@ func TestMovieService_UpdateMovie(t *testing.T) {
 
 	err := service.UpdateMovie(context.Background(), &domain.Movie{
 		Id:          1,
-		Title:       "title",
+		Title:       "name",
 		Description: "description",
 		ReleaseDate: releaseDate,
 		Rating:      9.0,
@@ -389,7 +389,7 @@ func TestMovieService_UpdateMovie_NotExists(t *testing.T) {
 
 	err := service.UpdateMovie(context.Background(), &domain.Movie{
 		Id:          1,
-		Title:       "title",
+		Title:       "name",
 		Description: "description",
 		ReleaseDate: releaseDate,
 		Rating:      9.0,
@@ -464,14 +464,14 @@ func TestFilterBuilder(t *testing.T) {
 
 	f := NewFilter()
 	assert.NotNil(t, f)
-	assert.Nil(t, f.title)
+	assert.Nil(t, f.name)
 	assert.Nil(t, f.releaseDate)
 	assert.Nil(t, f.rating)
 
-	title, date, rating := "title", time.Now(), 5.0
+	title, date, rating := "name", time.Now(), 5.0
 	f = f.WithTitle(title).WithReleaseDate(date).WithRating(rating)
 
-	assert.Equal(t, title, *f.title)
+	assert.Equal(t, title, *f.name)
 	assert.Equal(t, date, *f.releaseDate)
 	assert.Equal(t, rating, *f.rating)
 }

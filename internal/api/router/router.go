@@ -22,7 +22,7 @@ func New(actorSrv *actor.Service, movieSrv *movie.Service, user *user.Service, l
 	registerHandlerWithAuth(mux, "DELETE", "/actors/{id}", h.DeleteActorHandler, log)
 	registerHandlerWithAuth(mux, "POST", "/movies", h.AddMovieHandler, log)
 	registerHandlerWithAuth(mux, "POST", "/movies/{id}/actors", h.AddActorToMovieHandler, log)
-	registerHandlerWithAuth(mux, "GET", "/movies", h.GetAllMoviesHandler, log)
+	registerHandlerWithAuth(mux, "GET", "/movies", h.GetMoviesHandler, log)
 	registerHandlerWithAuth(mux, "GET", "/movies/{id}", h.GetMovieHandler, log)
 	registerHandlerWithAuth(mux, "PUT", "/movies/{id}", h.UpdateMovieHandler, log)
 	registerHandlerWithAuth(mux, "PATCH", "/movies/{id}", h.UpdateMovieHandler, log)

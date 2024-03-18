@@ -115,21 +115,6 @@ func (mr *MockActorRepositoryMockRecorder) ListActors(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListActors", reflect.TypeOf((*MockActorRepository)(nil).ListActors), ctx)
 }
 
-// MovieExists mocks base method.
-func (m *MockActorRepository) MovieExists(ctx context.Context, id int) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MovieExists", ctx, id)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// MovieExists indicates an expected call of MovieExists.
-func (mr *MockActorRepositoryMockRecorder) MovieExists(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MovieExists", reflect.TypeOf((*MockActorRepository)(nil).MovieExists), ctx, id)
-}
-
 // UpdateActor mocks base method.
 func (m *MockActorRepository) UpdateActor(ctx context.Context, new *domain.Actor) error {
 	m.ctrl.T.Helper()

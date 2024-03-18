@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 	"vk-backend/internal/domain"
@@ -121,38 +123,9 @@ func (h *Handler) GetMovieHandler(writer http.ResponseWriter, request *http.Requ
 	}
 }
 
-func (h *Handler) GetAllMoviesHandler(writer http.ResponseWriter, request *http.Request) {
-	queryParams := request.URL.Query()
-
-	sortParam := queryParams.Get("sort")
-	var sort movie.SortBy
-	switch sortParam {
-	case "rating":
-		sort = movie.SortByRating
-	case "release_date":
-		sort = movie.SortByReleaseDate
-	case "title":
-		sort = movie.SortByTitle
-	default:
-		sort = movie.DefaultSort
-	}
-
-	filter := movie.NewFilter()
-	if title := queryParams.Get("title"); title != "" {
-		filter = filter.WithTitle(title)
-	}
-	if releaseDate := queryParams.Get("release_date"); releaseDate != "" {
-		parsedDate, err := time.Parse(time.DateOnly, releaseDate)
-		if err == nil {
-			filter = filter.WithReleaseDate(parsedDate)
-		}
-	}
-	if rating := queryParams.Get("rating"); rating != "" {
-		parsedRating, err := strconv.ParseFloat(rating, 64)
-		if err == nil {
-			filter = filter.WithRating(parsedRating)
-		}
-	}
+// GetMoviesHandler used to get movies with specified sorting, searching by title of movie or name of actor
+func (h *Handler) GetMoviesHandler(writer http.ResponseWriter, request *http.Request) {
+	sort, filter := buildSortingAndFilter(request.URL.Query())
 
 	movies, err := h.mov.ListMovies(request.Context(), filter, sort)
 	if err != nil {
@@ -164,7 +137,6 @@ func (h *Handler) GetAllMoviesHandler(writer http.ResponseWriter, request *http.
 	for _, m := range movies {
 		dtos = append(dtos, movieToDTO(m))
 	}
-
 	if len(dtos) == 0 {
 		writer.WriteHeader(http.StatusNoContent)
 		return
@@ -263,6 +235,43 @@ func (h *Handler) DeleteMovieHandler(writer http.ResponseWriter, request *http.R
 
 	writer.WriteHeader(http.StatusNoContent)
 
+}
+
+// buildSortingAndFilter gets sorting and filter parameters from request and returns them as movie.SortBy and *movie.Filter
+func buildSortingAndFilter(u url.Values) (movie.SortBy, *movie.Filter) {
+	sortParam := u.Get("sort")
+	var sort movie.SortBy
+	switch sortParam {
+	case "rating":
+		sort = movie.SortByRating
+	case "release_date":
+		sort = movie.SortByReleaseDate
+	case "name":
+		sort = movie.SortByTitle
+	default:
+		sort = movie.DefaultSort
+	}
+
+	filter := movie.NewFilter()
+	if name := u.Get("name"); name != "" {
+		filter = filter.WithTitle(name)
+	}
+	if releaseDate := u.Get("release_date"); releaseDate != "" {
+		parsedDate, err := time.Parse(time.DateOnly, releaseDate)
+		if err == nil {
+			filter = filter.WithReleaseDate(parsedDate)
+		}
+	}
+	if rating := u.Get("rating"); rating != "" {
+		parsedRating, err := strconv.ParseFloat(rating, 64)
+		if err == nil {
+			filter = filter.WithRating(parsedRating)
+		}
+	}
+
+	fmt.Println(sort, filter)
+
+	return sort, filter
 }
 
 func movieToDTO(m *domain.Movie) MovieDTO {

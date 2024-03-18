@@ -99,36 +99,6 @@ func (mr *MockMovieRepositoryMockRecorder) DeleteMovie(ctx, id any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMovie", reflect.TypeOf((*MockMovieRepository)(nil).DeleteMovie), ctx, id)
 }
 
-// FindMoviesByActorName mocks base method.
-func (m *MockMovieRepository) FindMoviesByActorName(ctx context.Context, name string) ([]*domain.Movie, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindMoviesByActorName", ctx, name)
-	ret0, _ := ret[0].([]*domain.Movie)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// FindMoviesByActorName indicates an expected call of FindMoviesByActorName.
-func (mr *MockMovieRepositoryMockRecorder) FindMoviesByActorName(ctx, name any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindMoviesByActorName", reflect.TypeOf((*MockMovieRepository)(nil).FindMoviesByActorName), ctx, name)
-}
-
-// FindMoviesByTitle mocks base method.
-func (m *MockMovieRepository) FindMoviesByTitle(ctx context.Context, name string) ([]*domain.Movie, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindMoviesByTitle", ctx, name)
-	ret0, _ := ret[0].([]*domain.Movie)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// FindMoviesByTitle indicates an expected call of FindMoviesByTitle.
-func (mr *MockMovieRepositoryMockRecorder) FindMoviesByTitle(ctx, name any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindMoviesByTitle", reflect.TypeOf((*MockMovieRepository)(nil).FindMoviesByTitle), ctx, name)
-}
-
 // GetActorsByMovieId mocks base method.
 func (m *MockMovieRepository) GetActorsByMovieId(ctx context.Context, movieId int) ([]*domain.Actor, error) {
 	m.ctrl.T.Helper()
@@ -157,21 +127,6 @@ func (m *MockMovieRepository) GetMovieById(ctx context.Context, id int) (*domain
 func (mr *MockMovieRepositoryMockRecorder) GetMovieById(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMovieById", reflect.TypeOf((*MockMovieRepository)(nil).GetMovieById), ctx, id)
-}
-
-// GetMoviesWithActor mocks base method.
-func (m *MockMovieRepository) GetMoviesWithActor(ctx context.Context, actorId int) ([]*domain.Movie, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMoviesWithActor", ctx, actorId)
-	ret0, _ := ret[0].([]*domain.Movie)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetMoviesWithActor indicates an expected call of GetMoviesWithActor.
-func (mr *MockMovieRepositoryMockRecorder) GetMoviesWithActor(ctx, actorId any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMoviesWithActor", reflect.TypeOf((*MockMovieRepository)(nil).GetMoviesWithActor), ctx, actorId)
 }
 
 // ListMovies mocks base method.

@@ -7,7 +7,7 @@ import (
 )
 
 type Filter struct {
-	title       *string
+	name        *string
 	releaseDate *time.Time
 	rating      *float64
 }
@@ -17,7 +17,7 @@ func NewFilter() *Filter {
 }
 
 func (f *Filter) WithTitle(title string) *Filter {
-	f.title = &title
+	f.name = &title
 	return f
 }
 
@@ -37,7 +37,9 @@ func FilterMovies(movies []*domain.Movie, filter *Filter) []*domain.Movie {
 		return movies
 	}
 	for _, movie := range movies {
-		if filter.title != nil && !strings.Contains(movie.Title, *filter.title) {
+		if filter.name != nil &&
+			!strings.Contains(strings.ToLower(movie.Title), strings.ToLower(*filter.name)) &&
+			!searchActor(movie.Actors, *filter.name) {
 			continue
 		}
 		if filter.releaseDate != nil && movie.ReleaseDate.Before(*filter.releaseDate) {
@@ -50,4 +52,13 @@ func FilterMovies(movies []*domain.Movie, filter *Filter) []*domain.Movie {
 	}
 
 	return res
+}
+
+func searchActor(actors []*domain.Actor, name string) bool {
+	for _, actor := range actors {
+		if strings.Contains(strings.ToLower(actor.Name), strings.ToLower(name)) {
+			return true
+		}
+	}
+	return false
 }
