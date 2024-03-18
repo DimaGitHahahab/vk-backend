@@ -17,4 +17,5 @@ var (
 
 	ErrInvalidRating       = errors.New("rating is invalid")
 	ErrActorAlreadyInMovie = errors.New("actor is already in the movie")
+	ErrEmptyReleaseDate    = errors.New("empty release date")
 )

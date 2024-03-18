@@ -29,7 +29,7 @@ func NewService(repo repository.MovieRepository) Service {
 }
 
 func (s *movieService) AddMovie(ctx context.Context, title string, description string, releaseDate time.Time, rating float64, actors []*domain.Actor) (*domain.Movie, error) {
-	err := validateMovieData(title, description, rating)
+	err := validateMovieData(title, description, releaseDate, rating)
 	if err != nil {
 		return nil, err
 	}
@@ -56,6 +56,17 @@ func (s *movieService) AddActorToMovie(ctx context.Context, actorId int, movieId
 	}
 	if !ok {
 		return domain.ErrMovieNotExists
+	}
+
+	movie, err := s.repo.GetMovieById(ctx, movieId)
+	if err != nil {
+		return fmt.Errorf("actor service can't get movie by id: %w", err)
+	}
+
+	for _, actor := range movie.Actors {
+		if actor.Id == actorId {
+			return domain.ErrActorAlreadyInMovie
+		}
 	}
 
 	err = s.repo.AddActorToMovie(ctx, actorId, movieId)
@@ -144,7 +155,7 @@ func (s *movieService) DeleteMovie(ctx context.Context, id int) error {
 	return nil
 }
 
-func validateMovieData(title, description string, rating float64) error {
+func validateMovieData(title, description string, date time.Time, rating float64) error {
 	if title == "" {
 		return domain.ErrEmptyTitle
 	}
@@ -159,6 +170,9 @@ func validateMovieData(title, description string, rating float64) error {
 	}
 	if rating < 0 || rating > 10 {
 		return domain.ErrInvalidRating
+	}
+	if date.IsZero() {
+		return domain.ErrEmptyReleaseDate
 	}
 
 	return nil

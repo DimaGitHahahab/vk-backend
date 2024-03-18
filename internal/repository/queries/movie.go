@@ -17,7 +17,13 @@ func (q *Queries) AddMovie(
 	rating float64,
 	actors []*domain.Actor,
 ) (*domain.Movie, error) {
-	row := q.pool.QueryRow(ctx, addMovieQuery, title, description, releaseDate, rating)
+
+	tx, err := q.pool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	row := tx.QueryRow(ctx, addMovieQuery, title, description, releaseDate, rating)
 
 	movie := &domain.Movie{
 		Title:       title,
@@ -27,13 +33,19 @@ func (q *Queries) AddMovie(
 		Actors:      actors,
 	}
 	if err := row.Scan(&movie.Id); err != nil {
+		_ = tx.Rollback(ctx)
 		return nil, fmt.Errorf("failed to add movie: %w", err)
 	}
 
 	for _, actor := range actors {
-		if err := q.AddActorToMovie(ctx, actor.Id, movie.Id); err != nil {
-			return nil, fmt.Errorf("failed to add actor to movie: %w", err)
+		if _, err := tx.Exec(ctx, insertActorToMovieQuery, actor.Id, movie.Id); err != nil {
+			_ = tx.Rollback(ctx)
+			return nil, fmt.Errorf("failed to insert actor to movie: %w", err)
 		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	return movie, nil
@@ -92,6 +104,30 @@ func (q *Queries) ListMovies(ctx context.Context) ([]*domain.Movie, error) {
 	}
 	if rows.Err() != nil {
 		return nil, fmt.Errorf("failed to list movies: %w", rows.Err())
+	}
+
+	for _, movie := range movies {
+		rows, err := q.pool.Query(ctx, getMovieActorsQuery, movie.Id)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list movies: %w", err)
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			var actorId int
+			if err := rows.Scan(&actorId); err != nil {
+				return nil, fmt.Errorf("failed to list movies: %w", err)
+			}
+			actor, err := q.GetActorById(ctx, actorId)
+			if err != nil {
+				return nil, fmt.Errorf("failed to list movies: %w", err)
+			}
+			movie.Actors = append(movie.Actors, actor)
+		}
+		if rows.Err() != nil {
+			return nil, fmt.Errorf("failed to list movies: %w", rows.Err())
+		}
+
 	}
 
 	return movies, nil

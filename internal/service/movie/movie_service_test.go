@@ -160,6 +160,19 @@ func TestMovieService_AddActorToMovie(t *testing.T) {
 
 	repo.
 		EXPECT().
+		GetMovieById(gomock.Any(), 1).
+		Return(&domain.Movie{
+			Id:          1,
+			Title:       "title",
+			Description: "description",
+			ReleaseDate: time.Now(),
+
+			Rating: 9.0,
+			Actors: nil,
+		}, nil)
+
+	repo.
+		EXPECT().
 		AddActorToMovie(gomock.Any(), 1, 1).
 		Return(nil)
 
