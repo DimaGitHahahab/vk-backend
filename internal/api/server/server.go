@@ -17,7 +17,7 @@ type Server struct {
 func New(addr string, actorSrv *actor.Service, movieSrv *movie.Service, log *logrus.Logger) *Server {
 	mux := middleware.LoggingMiddleware(router.New(actorSrv, movieSrv), log)
 	srv := &http.Server{
-		Addr:    addr,
+		Addr:    ":" + addr,
 		Handler: mux,
 	}
 
