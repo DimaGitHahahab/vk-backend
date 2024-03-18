@@ -14,7 +14,7 @@ type Server struct {
 	srv *http.Server
 }
 
-func New(addr string, actorSrv *actor.Service, movieSrv *movie.Service, user *user.Service, log *logrus.Logger) *Server {
+func New(addr string, actorSrv *actor.ActorService, movieSrv *movie.MovieService, user *user.UserService, log *logrus.Logger) *Server {
 	mux := router.New(actorSrv, movieSrv, user, log)
 	srv := &http.Server{
 		Addr:    ":" + addr,

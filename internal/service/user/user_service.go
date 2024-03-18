@@ -8,7 +8,7 @@ import (
 	"vk-backend/internal/repository"
 )
 
-type Service interface {
+type UserService interface {
 	Register(ctx context.Context, name string, password string) (*domain.User, error)
 	GetUserByName(ctx context.Context, name string) (*domain.User, error)
 	GetUserById(ctx context.Context, id int) (*domain.User, error)
@@ -18,7 +18,7 @@ type userService struct {
 	repo repository.UserRepository
 }
 
-func NewService(repo repository.UserRepository) Service {
+func NewService(repo repository.UserRepository) UserService {
 	return &userService{
 		repo: repo,
 	}

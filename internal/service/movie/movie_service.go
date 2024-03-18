@@ -8,7 +8,7 @@ import (
 	"vk-backend/internal/repository"
 )
 
-type Service interface {
+type MovieService interface {
 	AddMovie(ctx context.Context, title string, description string, releaseDate time.Time, rating float64, actors []*domain.Actor) (*domain.Movie, error)
 	AddActorToMovie(ctx context.Context, actorId int, movieId int) error
 	GetMovieById(ctx context.Context, id int) (*domain.Movie, error)
@@ -22,7 +22,7 @@ type movieService struct {
 	repo repository.MovieRepository
 }
 
-func NewService(repo repository.MovieRepository) Service {
+func NewService(repo repository.MovieRepository) MovieService {
 	return &movieService{
 		repo: repo,
 	}

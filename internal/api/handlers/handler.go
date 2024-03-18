@@ -10,12 +10,12 @@ import (
 )
 
 type Handler struct {
-	act  actor.Service
-	mov  movie.Service
-	user user.Service
+	act  actor.ActorService
+	mov  movie.MovieService
+	user user.UserService
 }
 
-func New(act actor.Service, mov movie.Service, user user.Service) *Handler {
+func New(act actor.ActorService, mov movie.MovieService, user user.UserService) *Handler {
 	return &Handler{
 		act:  act,
 		mov:  mov,

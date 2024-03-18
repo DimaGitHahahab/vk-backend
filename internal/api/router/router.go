@@ -10,7 +10,7 @@ import (
 	"vk-backend/internal/service/user"
 )
 
-func New(actorSrv *actor.Service, movieSrv *movie.Service, user *user.Service, log *logrus.Logger) *http.ServeMux {
+func New(actorSrv *actor.ActorService, movieSrv *movie.MovieService, user *user.UserService, log *logrus.Logger) *http.ServeMux {
 	h := handlers.New(*actorSrv, *movieSrv, *user)
 
 	mux := http.NewServeMux()
